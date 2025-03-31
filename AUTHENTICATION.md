@@ -108,3 +108,4 @@ You can also inspect the contents of a certificate:
 
 # Example: View details of agente_py's certificate
 openssl x509 -in agente_py-cert.pem -noout -text
+Hyper Icon
