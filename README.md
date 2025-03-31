@@ -1,4 +1,4 @@
-# agentworks
+# Agentworks
 Project Purpose Summary
 Agent Coordination Protocol SaaS (ACPaaS) aims to be the definitive infrastructure layer for building complex, multi-agent systems, akin to "Stripe for Agents." It addresses the significant challenge developers face in creating secure, reliable, and interoperable communication protocols for coordinating diverse software agents, especially across different programming languages (initially Python and Ruby) and environments.
 
@@ -174,5 +174,4 @@ Contributing
 Contributions are welcome! Please follow standard practices for pull requests, issues, and code style. (Further details TBD).
 
 License
-This project is licensed under the MIT License. <!-- Choose and update -->
-
+This project is licensed under the MIT License. 

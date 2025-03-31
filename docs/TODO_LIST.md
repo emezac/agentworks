@@ -16,9 +16,9 @@
 **Objective:** Define the protocol specification and implement the authentication system with mTLS.
 
 ### 1. Define Protocol Message Structure
-*   [ ] (D) Finalize JSON schema definition (as provided in PRD Section 5.2.1) in `docs/PROTOCOL_SPEC.md`.
-*   [ ] (D) List all official `tipo` values (message types from PRD Section 5.2.2) in `docs/PROTOCOL_SPEC.md`.
+*   [x] (D) Finalize JSON schema definition (as provided in PRD Section 5.2.1) in `docs/PROTOCOL_SPEC.md`.
 *   [ ] (P) Implement `create_message(**kwargs)` helper function in Python agent base. Include default values (`requiere_ack=False`, etc.).
+*   [x] (D) List all official `tipo` values (message types from PRD Section 5.2.2) in `docs/PROTOCOL_SPEC.md`.
 *   [ ] (P) Implement `parse_message(json_str)` helper function in Python agent base. Include basic validation (required fields present).
 *   [ ] (R) Implement `create_message(**kwargs)` helper function in Ruby agent base. Include default values.
 *   [ ] (R) Implement `parse_message(json_str)` helper function in Ruby agent base. Include basic validation.
