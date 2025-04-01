@@ -17,14 +17,15 @@
 
 ### 1. Define Protocol Message Structure
 *   [x] (D) Finalize JSON schema definition (as provided in PRD Section 5.2.1) in `docs/PROTOCOL_SPEC.md`.
-*   [ ] (P) Implement `create_message(**kwargs)` helper function in Python agent base. Include default values (`requiere_ack=False`, etc.).
+*   [x] (P) Implement `create_message(**kwargs)` helper function in Python agent base. Include default values (`requiere_ack=False`, etc.).
 *   [x] (D) List all official `tipo` values (message types from PRD Section 5.2.2) in `docs/PROTOCOL_SPEC.md`.
-*   [ ] (P) Implement `parse_message(json_str)` helper function in Python agent base. Include basic validation (required fields present).
-*   [ ] (R) Implement `create_message(**kwargs)` helper function in Ruby agent base. Include default values.
-*   [ ] (R) Implement `parse_message(json_str)` helper function in Ruby agent base. Include basic validation.
+*   [x] (P) Implement `parse_message(json_str)` helper function in Python agent base. Include basic validation (required fields present).
+*   [x] (R) Implement `create_message(**kwargs)` helper function in Ruby agent base. Include default values.
+*   [x] (R) Implement `parse_message(json_str)` helper function in Ruby agent base. Include basic validation.
 
 ### 2. Authentication System Implementation (mTLS)
 *   [ ] (D) Create OpenSSL script `scripts/generate_ca.sh` to generate `ca-key.pem` and `ca-cert.pem`.
+*   [x] (D) Move `generate_agent_cert.sh` script to `bin/` directory.
 *   [ ] (D) Create OpenSSL script `scripts/generate_agent_cert.sh <agent_name>` to generate `agent_name-key.pem`, `agent_name-csr.pem`, and sign it with the CA to create `agent_name-cert.pem`.
 *   [ ] (D) Document certificate generation process (using the scripts) in `docs/AUTHENTICATION.md`.
 *   [ ] (S, P) Configure Python WSS server (FastAPI/websockets) for mTLS:

@@ -7,7 +7,7 @@ By providing a standardized protocol built on WSS with mandatory mTLS authentica
 
 README.md
 
-## Agent Coordination Protocol SaaS (ACPaaS)
+# Agent Coordination Protocol SaaS (ACPaaS)
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://example.com/build) <!-- Placeholder -->
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE) <!-- Placeholder -->
@@ -66,79 +66,57 @@ This repository contains the core backend platform, example agent implementation
 ```bash
 git clone <your-repository-url>
 cd acpaas
-```
-
-### 2. Setup Authentication (mTLS Certificates)
-
+Use code with caution.
+Markdown
+2. Setup Authentication (mTLS Certificates)
 Every agent (and potentially the backend itself, depending on deployment) needs mTLS certificates signed by a common Certificate Authority (CA).
 
-#### Generate CA Key and Certificate
+Follow the instructions in docs/AUTHENTICATION.md to generate your private CA and individual agent certificates using the provided scripts in the scripts/ directory.
 
-Use the provided script in the `scripts` directory to generate your CA key and certificate:
+# Example: Generate CA (do this once)
+bash scripts/generate_ca.sh
+# Enter password for CA key when prompted
 
-```bash
-# Navigate to the scripts directory
-cd scripts
-
-# Run the script to generate CA key and certificate
-./generate_ca.sh
-```
-
-Follow the prompts to enter the necessary details for the CA certificate.
-
-#### Generate Agent Certificates
-
-Use the `generate_agent_cert.sh` script in the `bin` directory to generate individual agent certificates:
-
-```bash
 # Example: Generate certs for 'agente_py'
-bash bin/generate_agent_cert.sh agente_py
+bash scripts/generate_agent_cert.sh agente_py
 # Enter CA password when prompted
 
 # Example: Generate certs for 'agente_ruby'
-bash bin/generate_agent_cert.sh agente_ruby
+bash scripts/generate_agent_cert.sh agente_ruby
 # Enter CA password when prompted
-```
+Use code with caution.
+Bash
+Ensure the generated ca-cert.pem and the specific <agent_id>-key.pem & <agent_id>-cert.pem files are accessible to the agents/backend at runtime.
 
-Ensure the generated `ca-cert.pem` and the specific `<agent_id>-key.pem` & `<agent_id>-cert.pem` files are accessible to the agents/backend at runtime.
-
-### 3. Run the ACPaaS Backend (Optional - for SaaS simulation)
-
+3. Run the ACPaaS Backend (Optional - for SaaS simulation)
 The backend orchestrates connections, tracks state, and provides the API/dashboard.
 
 (Instructions below assume Docker)
 
-Configure Backend: You might need to adjust settings (like certificate paths if the backend requires its own mTLS identity) in `acpaas_backend/app/core/config.py` or via environment variables defined in a `.env` file or `docker-compose.yml`.
+Configure Backend: You might need to adjust settings (like certificate paths if the backend requires its own mTLS identity) in acpaas_backend/app/core/config.py or via environment variables defined in a .env file or docker-compose.yml.
 
 Build & Run:
 
-```bash
 cd acpaas_backend
 docker-compose up --build
 # Or: docker build -t acpaas-backend . && docker run -p 8000:8000 -p 443:443 <...> acpaas-backend
-```
-
+Use code with caution.
+Bash
 Note: The default setup might require mapping ports and volumes for certificates.
 
-Refer to `acpaas_backend/README.md` (if created) for more detailed backend setup.
+Refer to acpaas_backend/README.md (if created) for more detailed backend setup.
 
-### 4. Run the Example Agents
-
+4. Run the Example Agents
 These examples demonstrate how agents implement the protocol to communicate (either peer-to-peer or via the backend).
 
-**Python Agent:**
+Python Agent:
 
-Navigate to `examples/python_agent/`.
+Navigate to examples/python_agent/.
 
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
+Install dependencies: pip install -r requirements.txt
 
 Run the agent (adjust arguments as needed):
 
-```bash
 python agent_py.py \
   --id "agente_py" \
   --port 8765 \
@@ -146,23 +124,18 @@ python agent_py.py \
   --ca-cert ../../ca-cert.pem \      # Adjust path to CA cert
   --my-cert ../../agente_py-cert.pem \ # Adjust path to agent cert
   --my-key ../../agente_py-key.pem   # Adjust path to agent key
-```
+Use code with caution.
+Bash
+See docs/QUICK_START_PYTHON.md for more details.
 
-See `docs/QUICK_START_PYTHON.md` for more details.
+Ruby Agent:
 
-**Ruby Agent:**
+Navigate to examples/ruby_agent/.
 
-Navigate to `examples/ruby_agent/`.
-
-Install dependencies:
-
-```bash
-bundle install
-```
+Install dependencies: bundle install
 
 Run the agent (adjust arguments as needed):
 
-```bash
 ruby agent_rb.rb \
   --id "agente_ruby" \
   --port 8766 \
@@ -170,41 +143,37 @@ ruby agent_rb.rb \
   --ca-cert ../../ca-cert.pem \      # Adjust path to CA cert
   --my-cert ../../agente_ruby-cert.pem \ # Adjust path to agent cert
   --my-key ../../agente_ruby-key.pem   # Adjust path to agent key
-```
-
-See `docs/QUICK_START_RUBY.md` for more details.
+Use code with caution.
+Bash
+See docs/QUICK_START_RUBY.md for more details.
 
 You should now see the agents connecting, authenticating via mTLS, registering, exchanging capabilities, and potentially initiating sessions/tasks based on the example logic.
 
-## Project Structure
-
-```plaintext
+Project Structure
 acpaas/
 ├── acpaas_backend/   # Core SaaS Platform (FastAPI)
-├── acpaas_agent_lib/ # Reusable Agent Library/SDK
 ├── examples/         # Agent implementations (Python, Ruby)
 ├── scripts/          # Helper scripts (cert generation)
-├── bin/              # Utilities and executable scripts
 ├── docs/             # Documentation (Protocol, Auth, Quick Starts)
 ├── infra/            # Deployment configurations (Optional)
 ├── tests/            # Tests (Backend unit/integration, E2E) (Optional)
 ├── .gitignore
 ├── LICENSE
 └── README.md         # This file
-```
+Use code with caution.
+Documentation
+Protocol Specification: Detailed message structures, types, and flows.
 
-## Documentation
+Authentication Setup: Guide to generating mTLS certificates.
 
-* **Protocol Specification**: Detailed message structures, types, and flows.
-* **Authentication Setup**: Guide to generating mTLS certificates.
-* **Python Agent Quick Start**: How to run the Python agent example.
-* **Ruby Agent Quick Start**: How to run the Ruby agent example.
-* **Backend Deployment**: Notes on deploying the SaaS backend.
+Python Agent Quick Start: How to run the Python agent example.
 
-## Contributing
+Ruby Agent Quick Start: How to run the Ruby agent example.
 
+Backend Deployment: Notes on deploying the SaaS backend.
+
+Contributing
 Contributions are welcome! Please follow standard practices for pull requests, issues, and code style. (Further details TBD).
 
-## License
-
+License
 This project is licensed under the MIT License.

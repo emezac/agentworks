@@ -1,0 +1,44 @@
+---
+description: Rules for Ruby development
+globs: *.rb
+---
+
+# Your rule content
+
+-Write concise, idiomatic Ruby code with accurate examples
+-Follow Rails conventions and best practices
+-Use object-oriented and functional programming patterns as appropriate
+-Prefer iteration and modularization over code duplication
+-Use descriptive variable and method names (e.g., user_signed_in?, calculate_total)
+-Structure files according to Rails conventions (MVC, concerns, helpers, etc.)
+-Prevent using gems that are not necessary; for API calls use net/http or open-uri
+-Do not delete functional code while adding and deleting features
+-Use snake_case for file names, method names, and variables
+-Use CamelCase for class and module names
+-Follow Rails naming conventions for models, controllers, and views
+-Use Ruby 3.x features when appropriate (e.g., pattern matching, endless methods)
+-Leverage Rails' built-in helpers and methods
+-Use ActiveRecord effectively for database operations
+-Follow the Ruby Style Guide (https://rubystyle.guide/)
+-Use Ruby's expressive syntax (e.g., unless, ||=, &.)
+-Prefer single quotes for strings unless interpolation is needed
+-Use exceptions for exceptional cases, not for control flow
+-Implement proper error logging and user-friendly messages
+-Use ActiveModel validations in models
+-Handle errors gracefully in controllers and display appropriate flash messages
+-Use Hotwire (Turbo and Stimulus) for dynamic, SPA-like interactions
+-Implement responsive design with Twitter Bootstrap 5
+-Use Rails view helpers and partials to keep views DRY
+-Use glypicons for icons where possible
+-Use database indexing effectively
+-Use eager loading to avoid N+1 queries
+-Optimize database queries using includes, joins, or select
+-Follow RESTful routing conventions
+-Use concerns for shared behavior across models or controllers
+-Implement service objects for complex business logic
+-Use background jobs (e.g., Sidekiq) for time-consuming tasks
+-Implement proper authentication and authorization (e.g., Devise, Pundit)
+-Use strong parameters in controllers
+-Protect against common web vulnerabilities (XSS, CSRF, SQL injection)
+-Avoid deprecated npm packages (discard anything not updated in the last two years)
+-Follow the official Ruby on Rails guides for best practices
