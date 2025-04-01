@@ -11,27 +11,29 @@ This guide provides instructions to set up and run a basic Ruby agent that can c
 
 ## 2. Prerequisites
 
-*   **Ruby:** Version 2.7 or higher recommended.
-*   **Gems:** Install the necessary gems:
+* **Ruby:** Version 2.7 or higher recommended.
+* **Gems:** Install the necessary gems:
+
     ```bash
     gem install async async-websocket async-io async-ssl json logger securerandom openssl
     ```
-*   **Certificates:** You MUST have the required certificate files generated as described in `AUTHENTICATION.md`:
-    *   `ca-cert.pem` (The public CA certificate)
-    *   `<your_agent_id>-key.pem` (Your agent's private key)
-    *   `<your_agent_id>-cert.pem` (Your agent's public certificate)
-*   **ACPaaS Server/Peer:** An ACPaaS-compliant server or peer agent must be running and accessible (e.g., the FastAPI backend or another agent). Know its WSS URI (e.g., `wss://acpaas.example.com:443` or `wss://peer_agent:8765`).
+
+* **Certificates:** You MUST have the required certificate files generated as described in `AUTHENTICATION.md`:
+  * `ca-cert.pem` (The public CA certificate)
+  * `<your_agent_id>-key.pem` (Your agent's private key)
+  * `<your_agent_id>-cert.pem` (Your agent's public certificate)
+* **ACPaaS Server/Peer:** An ACPaaS-compliant server or peer agent must be running and accessible (e.g., the FastAPI backend or another agent). Know its WSS URI (e.g., `wss://acpaas.example.com:443` or `wss://peer_agent:8765`).
 
 ## 3. Agent Configuration
 
 Your agent script will need configuration. You can use environment variables, command-line arguments (e.g., using `OptionParser`), or a config file. Key parameters include:
 
-*   `AGENT_ID`: Your agent's unique identifier (must match the CN in your certificate).
-*   `AGENT_PORT`: The port this agent will listen on for incoming connections.
-*   `PEER_WSS_URI`: The WSS URI of the server or initial peer to connect to.
-*   `CA_CERT_PATH`: Path to `ca-cert.pem`.
-*   `MY_CERT_PATH`: Path to `<your_agent_id>-cert.pem`.
-*   `MY_KEY_PATH`: Path to `<your_agent_id>-key.pem`.
+* `AGENT_ID`: Your agent's unique identifier (must match the CN in your certificate).
+* `AGENT_PORT`: The port this agent will listen on for incoming connections.
+* `PEER_WSS_URI`: The WSS URI of the server or initial peer to connect to.
+* `CA_CERT_PATH`: Path to `ca-cert.pem`.
+* `MY_CERT_PATH`: Path to `<your_agent_id>-cert.pem`.
+* `MY_KEY_PATH`: Path to `<your_agent_id>-key.pem`.
 
 ## 4. Basic Agent Implementation (`agent_rb.rb` Example)
 

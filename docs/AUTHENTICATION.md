@@ -9,21 +9,22 @@
 
 All communication within the Agent Coordination Protocol SaaS (ACPaaS) environment **MUST** be secured using **Mutual TLS (mTLS)**. This ensures that:
 
-1.  **Confidentiality:** Communication is encrypted over the WSS connection.
-2.  **Server Authentication:** Agents verify the identity of the server or peer they are connecting to.
-3.  **Client Authentication:** The server or peer verifies the identity of the connecting agent.
+1. **Confidentiality:** Communication is encrypted over the WSS connection.
+2. **Server Authentication:** Agents verify the identity of the server or peer they are connecting to.
+3. **Client Authentication:** The server or peer verifies the identity of the connecting agent.
 
 This bidirectional authentication provides a strong security foundation, preventing unauthorized agents from connecting or intercepting communication.
 
 ## 2. Core Concepts
 
-*   **Certificate Authority (CA):** A central trusted entity that issues and signs digital certificates. For ACPaaS, you will create your own **private CA**. This CA will be the root of trust for all agents within your environment.
-*   **Agent Certificates:** Each individual agent instance requires its own unique **X.509 certificate** and corresponding **private key**. This certificate acts as the agent's digital identity and MUST be signed by your private CA.
-*   **Certificate Chain:** When an agent presents its certificate, the receiving party verifies it by checking if it was signed by a trusted CA (in this case, your private CA).
+* **Certificate Authority (CA):** A central trusted entity that issues and signs digital certificates. For ACPaaS, you will create your own **private CA**. This CA will be the root of trust for all agents within your environment.
+* **Agent Certificates:** Each individual agent instance requires its own unique **X.509 certificate** and corresponding **private key**. This certificate acts as the agent's digital identity and MUST be signed by your private CA.
+* **Certificate Chain:** When an agent presents its certificate, the receiving party verifies it by checking if it was signed by a trusted CA (in this case, your private CA).
 
 ## 3. Prerequisites
 
-*   **OpenSSL:** You need the OpenSSL command-line tool installed on the machine where you will generate the certificates. You can typically check your installation by running:
+* **OpenSSL:** You need the OpenSSL command-line tool installed on the machine where you will generate the certificates. You can typically check your installation by running:
+
     ```bash
     openssl version
     ```
@@ -37,27 +38,30 @@ The following steps use the provided helper scripts (`scripts/generate_ca.sh` an
 **When:** Perform this step **ONCE** for your entire ACPaaS environment.
 **Purpose:** Creates the root certificate and private key that will be used to sign all individual agent certificates.
 
-1.  **Navigate to the `scripts` directory** (or ensure the scripts are in your PATH).
-2.  **Run the CA generation script:**
+1. **Navigate to the `scripts` directory** (or ensure the scripts are in your PATH).
+2. **Run the CA generation script:**
+
     ```bash
     bash ./generate_ca.sh
     ```
-3.  **Enter a strong password** when prompted for the CA private key (`ca-key.pem`). **REMEMBER THIS PASSWORD** and keep it extremely secure. This password protects the most critical key in your setup.
-4.  **Provide Certificate Details:** You will be prompted for information (Country, State, Org Name, etc.) for the CA certificate. Fill these in appropriately for your organization. The "Common Name" (CN) should identify your CA (e.g., "My Company ACPaaS CA").
+
+3. **Enter a strong password** when prompted for the CA private key (`ca-key.pem`). **REMEMBER THIS PASSWORD** and keep it extremely secure. This password protects the most critical key in your setup.
+4. **Provide Certificate Details:** You will be prompted for information (Country, State, Org Name, etc.) for the CA certificate. Fill these in appropriately for your organization. The "Common Name" (CN) should identify your CA (e.g., "My Company ACPaaS CA").
 
 **Output Files:**
 
-*   `ca-key.pem`: The **private key** for your CA. **PROTECT THIS FILE AND ITS PASSWORD VIGOROUSLY.** Anyone with this key can issue trusted certificates for your environment. It is *only* needed when signing new agent certificates.
-*   `ca-cert.pem`: The **public certificate** for your CA. This file is **not sensitive** and **MUST be distributed to EVERY agent** so they can verify certificates signed by this CA.
-*   `ca-cert.srl`: A serial number file used by OpenSSL to track issued certificates.
+* `ca-key.pem`: The **private key** for your CA. **PROTECT THIS FILE AND ITS PASSWORD VIGOROUSLY.** Anyone with this key can issue trusted certificates for your environment. It is *only* needed when signing new agent certificates.
+* `ca-cert.pem`: The **public certificate** for your CA. This file is **not sensitive** and **MUST be distributed to EVERY agent** so they can verify certificates signed by this CA.
+* `ca-cert.srl`: A serial number file used by OpenSSL to track issued certificates.
 
 ### Step 2: Generate Agent Certificates
 
 **When:** Perform this step **FOR EACH AGENT INSTANCE** that needs to connect to the ACPaaS system (e.g., `agente_py`, `agente_ruby`).
 **Purpose:** Creates a unique certificate and private key for a specific agent, signed by your CA.
 
-1.  **Ensure the CA files (`ca-key.pem`, `ca-cert.pem`, `ca-cert.srl`) exist** in the current directory or are accessible.
-2.  **Run the agent certificate generation script**, providing the agent's unique ID as an argument. This ID **MUST** match the identifier the agent will use in the protocol's `origen` field.
+1. **Ensure the CA files (`ca-key.pem`, `ca-cert.pem`, `ca-cert.srl`) exist** in the current directory or are accessible.
+2. **Run the agent certificate generation script**, providing the agent's unique ID as an argument. This ID **MUST** match the identifier the agent will use in the protocol's `origen` field.
+
     ```bash
     # Example for an agent named 'agente_py'
     bash ./generate_agent_cert.sh agente_py
@@ -65,14 +69,15 @@ The following steps use the provided helper scripts (`scripts/generate_ca.sh` an
     # Example for an agent named 'agente_ruby'
     bash ./generate_agent_cert.sh agente_ruby
     ```
-3.  **Enter the CA private key password** when prompted (the one you set in Step 1).
-4.  **Provide Certificate Details:** You will be prompted for information for the agent certificate. Ensure the **Common Name (CN)** matches the agent ID you provided to the script (e.g., `agente_py`). The script pre-fills this based on the argument.
+
+3. **Enter the CA private key password** when prompted (the one you set in Step 1).
+4. **Provide Certificate Details:** You will be prompted for information for the agent certificate. Ensure the **Common Name (CN)** matches the agent ID you provided to the script (e.g., `agente_py`). The script pre-fills this based on the argument.
 
 **Output Files (per agent):**
 
-*   `<agent_name>-key.pem` (e.g., `agente_py-key.pem`): The **private key** for this specific agent. **PROTECT THIS FILE.** It should only reside on the machine/container where the agent runs.
-*   `<agent_name>-cert.pem` (e.g., `agente_py-cert.pem`): The **public certificate** for this specific agent, signed by your CA. This is the agent's public identity.
-*   `<agent_name>-csr.pem` (e.g., `agente_py-csr.pem`): The Certificate Signing Request (temporary file, can be deleted after generation if desired).
+* `<agent_name>-key.pem` (e.g., `agente_py-key.pem`): The **private key** for this specific agent. **PROTECT THIS FILE.** It should only reside on the machine/container where the agent runs.
+* `<agent_name>-cert.pem` (e.g., `agente_py-cert.pem`): The **public certificate** for this specific agent, signed by your CA. This is the agent's public identity.
+* `<agent_name>-csr.pem` (e.g., `agente_py-csr.pem`): The Certificate Signing Request (temporary file, can be deleted after generation if desired).
 
 **Repeat Step 2 for every agent you intend to run.**
 
@@ -80,17 +85,17 @@ The following steps use the provided helper scripts (`scripts/generate_ca.sh` an
 
 For an agent (e.g., `agente_py`) to successfully connect using mTLS, it needs access to the following files at runtime:
 
-1.  **Its own private key:** `agente_py-key.pem`
-2.  **Its own public certificate:** `agente_py-cert.pem`
-3.  **The CA's public certificate:** `ca-cert.pem` (Needed to verify certificates presented by *other* agents or the server).
+1. **Its own private key:** `agente_py-key.pem`
+2. **Its own public certificate:** `agente_py-cert.pem`
+3. **The CA's public certificate:** `ca-cert.pem` (Needed to verify certificates presented by *other* agents or the server).
 
 These file paths will typically be provided to the agent's configuration (e.g., via command-line arguments, environment variables, or a configuration file) so the WSS client/server library can load them to set up the SSL/TLS context.
 
 ## 6. Security Considerations
 
-*   **CA Private Key (`ca-key.pem`):** This is the most critical file. Store it offline or in a highly secured location (like a hardware security module or managed secrets service if available). Limit access strictly to personnel authorized to issue new agent certificates. **Compromise of this key invalidates the entire system's trust.**
-*   **Agent Private Keys (`<agent_name>-key.pem`):** These keys must be protected on the systems where the agents run. Use appropriate file permissions (readable only by the user/service running the agent). Do not commit these keys to version control. Consider using environment variables or secrets management tools to inject key paths or content at runtime.
-*   **Certificate Validity:** The generated certificates have a default validity period (e.g., 365 days). Plan for certificate rotation before they expire.
+* **CA Private Key (`ca-key.pem`):** This is the most critical file. Store it offline or in a highly secured location (like a hardware security module or managed secrets service if available). Limit access strictly to personnel authorized to issue new agent certificates. **Compromise of this key invalidates the entire system's trust.**
+* **Agent Private Keys (`<agent_name>-key.pem`):** These keys must be protected on the systems where the agents run. Use appropriate file permissions (readable only by the user/service running the agent). Do not commit these keys to version control. Consider using environment variables or secrets management tools to inject key paths or content at runtime.
+* **Certificate Validity:** The generated certificates have a default validity period (e.g., 365 days). Plan for certificate rotation before they expire.
 
 ## 7. Verification (Optional)
 

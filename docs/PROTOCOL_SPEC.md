@@ -13,8 +13,8 @@ The protocol operates over **WebSockets Secure (WSS)** and mandates **Mutual TLS
 
 ## 2. Transport & Authentication
 
-*   **Transport:** All communication MUST occur over WebSockets Secure (WSS).
-*   **Authentication:** All connections MUST use Mutual TLS (mTLS). Both client and server MUST present valid X.509 certificates signed by a trusted Certificate Authority (CA). The Common Name (CN) or other certificate attributes MAY be used to correlate with the agent's identifier (`origen`). Connection MUST fail if mTLS handshake or certificate validation fails.
+* **Transport:** All communication MUST occur over WebSockets Secure (WSS).
+* **Authentication:** All connections MUST use Mutual TLS (mTLS). Both client and server MUST present valid X.509 certificates signed by a trusted Certificate Authority (CA). The Common Name (CN) or other certificate attributes MAY be used to correlate with the agent's identifier (`origen`). Connection MUST fail if mTLS handshake or certificate validation fails.
 
 ## 3. Message Structure
 
@@ -409,18 +409,18 @@ This document describes Version 1.1 of the ACPaaS Protocol. The protocol version
 
 The following are the official `tipo` values as defined in PRD Section 5.2.2:
 
-- `INIT`: Initialization message for starting a session.
-- `ACK`: Acknowledgment message for confirming receipt.
-- `ERROR`: Error message indicating a problem.
-- `REGISTRO`: Registration message for agent registration.
-- `ACK_REGISTRO`: Acknowledgment for registration.
-- `CAPABILITY_ANNOUNCE`: Message to announce capabilities.
-- `CAPABILITY_ACK`: Acknowledgment for capability announcement.
-- `SESSION_INIT`: Message to initiate a session.
-- `SESSION_ACCEPT`: Acceptance of a session initiation.
-- `SESSION_REJECT`: Rejection of a session initiation.
-- `SESSION_CLOSE`: Message to close a session.
-- `SOLICITUD_TAREA`: Task request message.
-- `RESPUESTA_TAREA`: Task response message.
-- `FLOW_CONTROL`: Message for flow control actions.
-- `MESSAGE_ACK`: Acknowledgment for messages requiring confirmation.
+* `INIT`: Initialization message for starting a session.
+* `ACK`: Acknowledgment message for confirming receipt.
+* `ERROR`: Error message indicating a problem.
+* `REGISTRO`: Registration message for agent registration.
+* `ACK_REGISTRO`: Acknowledgment for registration.
+* `CAPABILITY_ANNOUNCE`: Message to announce capabilities.
+* `CAPABILITY_ACK`: Acknowledgment for capability announcement.
+* `SESSION_INIT`: Message to initiate a session.
+* `SESSION_ACCEPT`: Acceptance of a session initiation.
+* `SESSION_REJECT`: Rejection of a session initiation.
+* `SESSION_CLOSE`: Message to close a session.
+* `SOLICITUD_TAREA`: Task request message.
+* `RESPUESTA_TAREA`: Task response message.
+* `FLOW_CONTROL`: Message for flow control actions.
+* `MESSAGE_ACK`: Acknowledgment for messages requiring confirmation.

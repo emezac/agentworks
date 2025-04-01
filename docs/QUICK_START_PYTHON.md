@@ -11,29 +11,31 @@ This guide provides instructions to set up and run a basic Python agent that can
 
 ## 2. Prerequisites
 
-*   **Python:** Version 3.8 or higher recommended (due to `asyncio` usage).
-*   **Libraries:** Install the necessary Python libraries:
+* **Python:** Version 3.8 or higher recommended (due to `asyncio` usage).
+* **Libraries:** Install the necessary Python libraries:
+
     ```bash
     pip install websockets==11.* # Or a compatible version
     # Add other dependencies if your agent logic requires them (e.g., langroid)
     # pip install langroid
     ```
-*   **Certificates:** You MUST have the required certificate files generated as described in `AUTHENTICATION.md`:
-    *   `ca-cert.pem` (The public CA certificate)
-    *   `<your_agent_id>-key.pem` (Your agent's private key)
-    *   `<your_agent_id>-cert.pem` (Your agent's public certificate)
-*   **ACPaaS Server/Peer:** An ACPaaS-compliant server or peer agent must be running and accessible (e.g., the FastAPI backend or another agent). Know its WSS URI (e.g., `wss://acpaas.example.com:443` or `wss://peer_agent:8766`).
+
+* **Certificates:** You MUST have the required certificate files generated as described in `AUTHENTICATION.md`:
+  * `ca-cert.pem` (The public CA certificate)
+  * `<your_agent_id>-key.pem` (Your agent's private key)
+  * `<your_agent_id>-cert.pem` (Your agent's public certificate)
+* **ACPaaS Server/Peer:** An ACPaaS-compliant server or peer agent must be running and accessible (e.g., the FastAPI backend or another agent). Know its WSS URI (e.g., `wss://acpaas.example.com:443` or `wss://peer_agent:8766`).
 
 ## 3. Agent Configuration
 
 Your agent script will need configuration, typically provided via environment variables, command-line arguments, or a config file. Key parameters include:
 
-*   `AGENT_ID`: Your agent's unique identifier (must match the CN in your certificate).
-*   `AGENT_WSS_URI`: The WSS URI where *this* agent will listen for incoming connections (if acting as a server), e.g., `wss://0.0.0.0:8765`.
-*   `PEER_WSS_URI`: The WSS URI of the server or initial peer to connect to.
-*   `CA_CERT_PATH`: Path to `ca-cert.pem`.
-*   `MY_CERT_PATH`: Path to `<your_agent_id>-cert.pem`.
-*   `MY_KEY_PATH`: Path to `<your_agent_id>-key.pem`.
+* `AGENT_ID`: Your agent's unique identifier (must match the CN in your certificate).
+* `AGENT_WSS_URI`: The WSS URI where *this* agent will listen for incoming connections (if acting as a server), e.g., `wss://0.0.0.0:8765`.
+* `PEER_WSS_URI`: The WSS URI of the server or initial peer to connect to.
+* `CA_CERT_PATH`: Path to `ca-cert.pem`.
+* `MY_CERT_PATH`: Path to `<your_agent_id>-cert.pem`.
+* `MY_KEY_PATH`: Path to `<your_agent_id>-key.pem`.
 
 ## 4. Basic Agent Implementation (`agent_py.py` Example)
 
