@@ -27,19 +27,19 @@
 
 ### 2. Authentication System Implementation (mTLS)
 
-* [ ] (D) Create OpenSSL script `scripts/generate_ca.sh` to generate `ca-key.pem` and `ca-cert.pem`.
+* [x] (D) Create OpenSSL script `scripts/generate_ca.sh` to generate `ca-key.pem` and `ca-cert.pem`.
 * [x] (D) Move `generate_agent_cert.sh` script to `bin/` directory.
-* [ ] (D) Create OpenSSL script `scripts/generate_agent_cert.sh <agent_name>` to generate `agent_name-key.pem`, `agent_name-csr.pem`, and sign it with the CA to create `agent_name-cert.pem`.
-* [ ] (D) Document certificate generation process (using the scripts) in `docs/AUTHENTICATION.md`.
-* [ ] (S, P) Configure Python WSS server (FastAPI/websockets) for mTLS:
-  * [ ] Require client certificates.
-  * [ ] Load server cert/key.
-  * [ ] Load CA cert for client verification.
-  * [ ] Set `verify_mode = ssl.CERT_REQUIRED`.
-* [ ] (P) Configure Python WSS client connection logic for mTLS:
-  * [ ] Load client cert/key.
-  * [ ] Load CA cert for server verification.
-  * [ ] Set `verify_mode = ssl.CERT_REQUIRED`.
+* [x] (D) Create OpenSSL script `scripts/generate_agent_cert.sh <agent_name>` to generate `agent_name-key.pem`, `agent_name-csr.pem`, and sign it with the CA to create `agent_name-cert.pem`.
+* [x] (D) Document certificate generation process (using the scripts) in `docs/AUTHENTICATION.md`.
+* [x] (S, P) Configure Python WSS server (FastAPI/websockets) for mTLS:
+  * [x] Require client certificates.
+  * [x] Load server cert/key.
+  * [x] Load CA cert for client verification.
+  * [x] Set `verify_mode = ssl.CERT_REQUIRED`.
+* [x] (P) Configure Python WSS client connection logic for mTLS:
+  * [x] Load client cert/key.
+  * [x] Load CA cert for server verification.
+  * [x] Set `verify_mode = ssl.CERT_REQUIRED`.
 * [ ] (R) Configure Ruby WSS server (`async-websocket` with `async-ssl`) for mTLS:
   * [ ] Require client certificates (`verify_mode = OpenSSL::SSL::VERIFY_PEER | OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT`).
   * [ ] Load server cert/key.

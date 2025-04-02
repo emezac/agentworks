@@ -33,53 +33,31 @@ This bidirectional authentication provides a strong security foundation, prevent
 
 The following steps use the provided helper scripts (`scripts/generate_ca.sh` and `scripts/generate_agent_cert.sh`) to simplify the process.
 
-### Step 1: Generate the Private Certificate Authority (CA)
+### Step 1: Generate CA Key and Certificate
 
-**When:** Perform this step **ONCE** for your entire ACPaaS environment.
-**Purpose:** Creates the root certificate and private key that will be used to sign all individual agent certificates.
+Use the `generate_ca.sh` script to create a CA key and certificate. This CA will be used to sign agent certificates.
 
-1. **Navigate to the `scripts` directory** (or ensure the scripts are in your PATH).
-2. **Run the CA generation script:**
+```bash
+# Navigate to the scripts directory
+cd scripts
 
-    ```bash
-    bash ./generate_ca.sh
-    ```
+# Run the script to generate CA key and certificate
+./generate_ca.sh
+```
 
-3. **Enter a strong password** when prompted for the CA private key (`ca-key.pem`). **REMEMBER THIS PASSWORD** and keep it extremely secure. This password protects the most critical key in your setup.
-4. **Provide Certificate Details:** You will be prompted for information (Country, State, Org Name, etc.) for the CA certificate. Fill these in appropriately for your organization. The "Common Name" (CN) should identify your CA (e.g., "My Company ACPaaS CA").
-
-**Output Files:**
-
-* `ca-key.pem`: The **private key** for your CA. **PROTECT THIS FILE AND ITS PASSWORD VIGOROUSLY.** Anyone with this key can issue trusted certificates for your environment. It is *only* needed when signing new agent certificates.
-* `ca-cert.pem`: The **public certificate** for your CA. This file is **not sensitive** and **MUST be distributed to EVERY agent** so they can verify certificates signed by this CA.
-* `ca-cert.srl`: A serial number file used by OpenSSL to track issued certificates.
+Follow the prompts to enter the necessary details for the CA certificate. The generated files will be `ca-key.pem` and `ca-cert.pem`.
 
 ### Step 2: Generate Agent Certificates
 
-**When:** Perform this step **FOR EACH AGENT INSTANCE** that needs to connect to the ACPaaS system (e.g., `agente_py`, `agente_ruby`).
-**Purpose:** Creates a unique certificate and private key for a specific agent, signed by your CA.
+Use the `generate_agent_cert.sh` script in the `scripts` directory to generate individual agent certificates. This script will require the CA key and certificate generated in Step 1.
 
-1. **Ensure the CA files (`ca-key.pem`, `ca-cert.pem`, `ca-cert.srl`) exist** in the current directory or are accessible.
-2. **Run the agent certificate generation script**, providing the agent's unique ID as an argument. This ID **MUST** match the identifier the agent will use in the protocol's `origen` field.
+```bash
+# Example: Generate certs for 'agente_py'
+./generate_agent_cert.sh agente_py
+# Enter CA password when prompted
+```
 
-    ```bash
-    # Example for an agent named 'agente_py'
-    bash ./generate_agent_cert.sh agente_py
-
-    # Example for an agent named 'agente_ruby'
-    bash ./generate_agent_cert.sh agente_ruby
-    ```
-
-3. **Enter the CA private key password** when prompted (the one you set in Step 1).
-4. **Provide Certificate Details:** You will be prompted for information for the agent certificate. Ensure the **Common Name (CN)** matches the agent ID you provided to the script (e.g., `agente_py`). The script pre-fills this based on the argument.
-
-**Output Files (per agent):**
-
-* `<agent_name>-key.pem` (e.g., `agente_py-key.pem`): The **private key** for this specific agent. **PROTECT THIS FILE.** It should only reside on the machine/container where the agent runs.
-* `<agent_name>-cert.pem` (e.g., `agente_py-cert.pem`): The **public certificate** for this specific agent, signed by your CA. This is the agent's public identity.
-* `<agent_name>-csr.pem` (e.g., `agente_py-csr.pem`): The Certificate Signing Request (temporary file, can be deleted after generation if desired).
-
-**Repeat Step 2 for every agent you intend to run.**
+Ensure the generated `ca-cert.pem` and the specific `<agent_id>-key.pem` & `<agent_id>-cert.pem` files are accessible to the agents/backend at runtime.
 
 ## 5. File Placement and Usage
 

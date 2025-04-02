@@ -358,34 +358,44 @@ Async do |main_task|
 end # Main Async block finishes when all sub-tasks complete (which they won't normally)
 
 $logger.info "Agent #{AGENT_ID} shutting down."
-Use code with caution.
-5. Running the Agent
-Save the code above as agent_rb.rb (or similar).
 
-Generate the necessary certificates (ca-cert.pem, my_agent_id-cert.pem, my_agent_id-key.pem).
+## Prerequisites
 
-Run the agent from your terminal, providing the correct arguments:
+- Ruby 2.7+
+- OpenSSL
+- mTLS certificates (generated using the provided scripts)
 
-ruby agent_rb.rb \
-  --id "agente_ruby" \
-  --port 8766 \
-  --peer-uri "wss://<PEER_HOSTNAME_OR_IP>:8765" \
-  --ca-cert ./ca-cert.pem \
-  --my-cert ./agente_ruby-cert.pem \
-  --my-key ./agente_ruby-key.pem
-Use code with caution.
-Bash
-(Replace <PEER_HOSTNAME_OR_IP> and port 8765 with the actual address of the Python agent or ACPaaS server).
+## Setup
 
-Observe the logs for connection status, registration, capability exchange, and any task processing messages.
+### Step 1: Generate mTLS Certificates
 
-6. Next Steps
-Flesh out the process_message function to handle all defined protocol messages.
+Before running the Ruby agent, ensure you have generated the necessary mTLS certificates.
 
-Implement proper state management for sessions (using concurrent-ruby Hashes or similar) and sequence numbers.
+1. **Generate CA Key and Certificate**: Use the `generate_ca.sh` script.
 
-Add robust error handling and potentially retry logic for ACKs.
+   ```bash
+   cd scripts
+   ./generate_ca.sh
+   ```
 
-Integrate your specific agent logic to perform actual tasks.
+2. **Generate Agent Certificates**: Use the `generate_agent_cert.sh` script.
 
-Refer to the full examples provided in the main ACPaaS project repository.
+   ```bash
+   ./generate_agent_cert.sh agente_ruby
+   ```
+
+### Step 2: Install Dependencies
+
+Navigate to the `examples/ruby_agent/` directory and install the required dependencies.
+
+```bash
+bundle install
+```
+
+### Step 3: Run the Agent
+
+Run the Ruby agent with the appropriate arguments.
+
+```bash
+ruby agent_rb.rb --id "agente_ruby" --port 8766 --peer-uri "wss://<PYTHON_AGENT_HOSTNAME_OR_IP>:8765" --ca-cert ../../ca-cert.pem --my-cert ../../agente_ruby-cert.pem --my-key ../../agente_ruby-key.pem
+```

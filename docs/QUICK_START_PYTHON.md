@@ -342,3 +342,44 @@ Add robust error handling and potentially retry logic for ACKs.
 Integrate your specific agent logic (e.g., using Langroid) to perform actual tasks.
 
 Refer to the full examples provided in the main ACPaaS project repository.
+
+## Prerequisites
+
+- Python 3.8+
+- OpenSSL
+- mTLS certificates (generated using the provided scripts)
+
+## Setup
+
+### Step 1: Generate mTLS Certificates
+
+Before running the Python agent, ensure you have generated the necessary mTLS certificates.
+
+1. **Generate CA Key and Certificate**: Use the `generate_ca.sh` script.
+
+   ```bash
+   cd scripts
+   ./generate_ca.sh
+   ```
+
+2. **Generate Agent Certificates**: Use the `generate_agent_cert.sh` script.
+
+   ```bash
+   ./generate_agent_cert.sh agente_py
+   ```
+
+### Step 2: Install Dependencies
+
+Navigate to the `examples/python_agent/` directory and install the required dependencies.
+
+```bash
+pip install -r requirements.txt
+```
+
+### Step 3: Run the Agent
+
+Run the Python agent with the appropriate arguments.
+
+```bash
+python agent_py.py --id "agente_py" --port 8765 --peer-uri "wss://<RUBY_AGENT_HOSTNAME_OR_IP>:8766" --ca-cert ../../ca-cert.pem --my-cert ../../agente_py-cert.pem --my-key ../../agente_py-key.pem
+```

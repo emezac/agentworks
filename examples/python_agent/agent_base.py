@@ -19,3 +19,34 @@ def create_message(tipo, origen, destino, id_mensaje=None, respuesta_a=None, id_
     }
     
     return message 
+
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+import ssl
+import uvicorn
+
+app = FastAPI()
+
+# SSL context setup
+def create_ssl_context():
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    # Update these paths to the correct locations of your certificate and key files
+    context.load_cert_chain(certfile="scripts/agente_py-cert.pem", keyfile="scripts/agente_py-key.pem")
+    context.load_verify_locations(cafile="scripts/ca-cert.pem")
+    context.verify_mode = ssl.CERT_REQUIRED
+    return context
+
+ssl_context = create_ssl_context()
+
+@app.websocket("/ws/{agent_id}")
+async def websocket_endpoint(websocket: WebSocket, agent_id: str):
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive_text()
+            print(f"Received from {agent_id}: {data}")
+            await websocket.send_text(f"Echo: {data}")
+    except WebSocketDisconnect:
+        print(f"Client {agent_id} disconnected")
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000) 
