@@ -40,18 +40,18 @@
   * [x] Load client cert/key.
   * [x] Load CA cert for server verification.
   * [x] Set `verify_mode = ssl.CERT_REQUIRED`.
-* [ ] (R) Configure Ruby WSS server (`async-websocket` with `async-ssl`) for mTLS:
-  * [ ] Require client certificates (`verify_mode = OpenSSL::SSL::VERIFY_PEER | OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT`).
-  * [ ] Load server cert/key.
-  * [ ] Load CA cert (`ca_file`).
-* [ ] (R) Configure Ruby WSS client connection logic for mTLS:
-  * [ ] Load client cert/key.
-  * [ ] Load CA cert (`ca_file`).
-  * [ ] Set `verify_mode`.
+* [x] (R) Configure Ruby WSS server (`async-websocket` with `async-ssl`) for mTLS:
+  * [x] Require client certificates (`verify_mode = OpenSSL::SSL::VERIFY_PEER | OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT`).
+  * [x] Load server cert/key.
+  * [x] Load CA cert (`ca_file`).
+* [x] (R) Configure Ruby WSS client connection logic for mTLS:
+  * [x] Load client cert/key.
+  * [x] Load CA cert (`ca_file`).
+  * [x] Set `verify_mode`.
 
 ### 3. Basic Transport Layer (WSS)
 
-* [ ] (S, P) Create basic FastAPI project structure.
+* [x] (S, P) Create basic FastAPI project structure.
 * [ ] (S, P) Add a WSS endpoint route (`/ws/{agent_id}`) using `websockets` library integration.
 * [ ] (R) Create basic Ruby agent script structure using `async-websocket` server and client patterns.
 * [ ] (B) Implement basic WSS connection handling (log on_connect, on_disconnect).
@@ -62,7 +62,7 @@
 * [ ] (D) Create certificate generation scripts (`scripts/`) and `docs/AUTHENTICATION.md`.
 * [ ] (B) Test basic WSS connectivity **with mTLS enabled** between:
   * [ ] Python Server <-> Python Client
-  * [ ] Ruby Server <-> Ruby Client
+  * [x] Ruby Server <-> Ruby Client
   * [ ] Python Server <-> Ruby Client
   * [ ] Ruby Server <-> Python Client
 * [ ] (B) Verify connections fail if incorrect/missing certificates are used.
