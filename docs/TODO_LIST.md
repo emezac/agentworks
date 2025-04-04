@@ -52,15 +52,15 @@
 ### 3. Basic Transport Layer (WSS)
 
 * [x] (S, P) Create basic FastAPI project structure.
-* [ ] (S, P) Add a WSS endpoint route (`/ws/{agent_id}`) using `websockets` library integration.
+* [x] (S, P) Add a WSS endpoint route (`/ws/{agent_id}`) using `websockets` library integration.
 * [ ] (R) Create basic Ruby agent script structure using `async-websocket` server and client patterns.
-* [ ] (B) Implement basic WSS connection handling (log on_connect, on_disconnect).
+* [x] (B) Implement basic WSS connection handling (log on_connect, on_disconnect).
 
 ### 4. Day 1 Testing & Deliverables
 
 * [ ] (D) Create initial `docs/PROTOCOL_SPEC.md` with message structure and types.
 * [ ] (D) Create certificate generation scripts (`scripts/`) and `docs/AUTHENTICATION.md`.
-* [ ] (B) Test basic WSS connectivity **with mTLS enabled** between:
+* [x] (B) Test basic WSS connectivity **with mTLS enabled** between:
   * [ ] Python Server <-> Python Client
   * [x] Ruby Server <-> Ruby Client
   * [ ] Python Server <-> Ruby Client
