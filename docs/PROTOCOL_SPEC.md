@@ -18,20 +18,23 @@ The protocol operates over **WebSockets Secure (WSS)** and mandates **Mutual TLS
 
 ## 3. Message Structure
 
-All messages in the ACPaaS protocol are JSON objects with the following structure:
+All messages must adhere to the following JSON schema:
 
 ```json
 {
-  "tipo": "string",
-  "id_mensaje": "string (uuid)",
-  "origen": "string",
-  "destino": "string",
-  "respuesta_a": "string (uuid) | null",
-  "timestamp": "string (ISO 8601 UTC)",
-  "id_sesion": "string (uuid) | null",
-  "numero_secuencia": "integer | null",
-  "requiere_ack": "boolean",
-  "datos": "object | null"
+  "type": "object",
+  "properties": {
+    "tipo": { "type": "string", "description": "Message type identifier" },
+    "id_mensaje": { "type": "string", "format": "uuid", "description": "Unique identifier for this message" },
+    "origen": { "type": "string", "description": "Unique ID of the sending agent" },
+    "destino": { "type": "string", "description": "Unique ID of the intended recipient agent" },
+    "timestamp": { "type": "string", "format": "date-time", "description": "ISO 8601 UTC timestamp of message creation" },
+    "id_sesion": { "type": ["string", "null"], "format": "uuid", "description": "Identifier for the logical session" },
+    "numero_secuencia": { "type": ["integer", "null"], "minimum": 0, "description": "Sequence number within a session" },
+    "requiere_ack": { "type": "boolean", "default": false, "description": "Indicates if a MESSAGE_ACK is requested" },
+    "datos": { "type": ["object", "null"], "description": "Payload specific to the message tipo" }
+  },
+  "required": ["tipo", "id_mensaje", "origen", "destino", "timestamp"]
 }
 ```
 
@@ -424,3 +427,11 @@ The following are the official `tipo` values as defined in PRD Section 5.2.2:
 * `RESPUESTA_TAREA`: Task response message.
 * `FLOW_CONTROL`: Message for flow control actions.
 * `MESSAGE_ACK`: Acknowledgment for messages requiring confirmation.
+
+## Authentication Flow
+
+1. Client initiates WSS connection to Server.
+2. TLS handshake with mutual certificate exchange.
+3. Agent sends `REGISTRO` message over the secure channel.
+4. Capabilities are exchanged via `CAPABILITY_ANNOUNCE`/`ACK`.
+5. Session management and task execution can begin.
