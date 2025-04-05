@@ -1,0 +1,226 @@
+# websocket_driver_client.rb
+require 'eventmachine'
+require 'websocket/driver'
+require 'openssl'
+require 'socket'
+require 'uri'
+
+# --- 1. Configuración ---
+server_url_string = "wss://localhost:8080/"
+client_cert_path = 'scripts/agente_py-cert.pem'
+client_key_path = 'scripts/agente_py-key.pem'
+ca_file_path = 'scripts/ca-cert.pem' # <-- DESCOMENTAR/RESTAURAR
+
+begin
+  uri = URI.parse(server_url_string)
+  unless uri.scheme == 'wss'
+    raise ArgumentError, "URL scheme must be wss://"
+  end
+  hostname = uri.host
+  port = uri.port || 443
+rescue URI::InvalidURIError, ArgumentError => e
+  puts "[Config] ERROR: Invalid server URL: #{server_url_string} - #{e.message}"
+  exit(1)
+end
+
+# Verificar todos los archivos
+[client_cert_path, client_key_path, ca_file_path].each do |path|
+  unless File.exist?(path)
+    puts "[Config] ERROR: Certificate, key, or CA file not found at: #{path}"
+    exit(1)
+  end
+end
+puts "[Config] All certificate files found."
+
+# Guardar settings, incluyendo CA y URL
+client_settings = {
+  client_cert_path: client_cert_path,
+  client_key_path: client_key_path,
+  ca_file_path: ca_file_path, # <-- RESTAURAR CA
+  hostname: hostname,
+  port: port,
+  url_string: server_url_string
+}
+
+
+# --- 2. Handler de Conexión EventMachine ---
+module WebSocketClientHandler
+  attr_reader :driver
+
+  def initialize(settings)
+    super()
+    @settings = settings
+    @driver = nil
+    @connected_ws = false
+    @write_buffer = String.new.force_encoding('BINARY')
+    puts "[Handler: #{object_id}] Initializing..."
+  end
+
+  def url
+    @settings[:url_string] # El driver necesita esto
+  end
+
+  def post_init
+    puts "[Handler: #{object_id}] TCP connection established to #{@settings[:hostname]}:#{port}. Starting TLS (WITH SERVER VERIFICATION)..."
+    start_tls(
+      private_key_file: @settings[:client_key_path],
+      cert_chain_file: @settings[:client_cert_path],
+      ca_file: @settings[:ca_file_path], # <-- RESTAURAR CA
+      verify_peer: true # <--- ¡RESTAURAR VERIFICACIÓN!
+    )
+  rescue => e
+    puts "[Handler: #{object_id}] ERROR during start_tls: #{e.class} - #{e.message}"
+    close_connection
+  end
+
+  def ssl_handshake_completed
+    puts "[Handler: #{object_id}] TLS handshake successful (Server SHOULD be verified)."
+
+    # --- RESTAURAR VERIFICACIÓN MANUAL DEL HOSTNAME ---
+    server_cert = get_peer_cert
+    unless server_cert
+      puts "[Handler: #{object_id}] ERROR: Could not get peer certificate after TLS handshake."
+      close_connection_after_writing
+      return
+    end
+
+    expected_hostname = @settings[:hostname]
+    begin
+      unless OpenSSL::SSL.verify_certificate_identity(server_cert, expected_hostname)
+        puts "[Handler: #{object_id}] ERROR: Hostname verification failed! Server hostname '#{expected_hostname}' does not match certificate CN/SANs."
+        close_connection_after_writing
+        return
+      end
+      puts "[Handler: #{object_id}] Hostname verification successful for '#{expected_hostname}'."
+    rescue OpenSSL::SSL::SSLError => e
+      puts "[Handler: #{object_id}] ERROR: Hostname verification failed! #{e.message}"
+      close_connection_after_writing
+      return
+    rescue => e
+      puts "[Handler: #{object_id}] ERROR during hostname verification: #{e.class} - #{e.message}"
+      close_connection_after_writing
+      return
+    end
+    # --- FIN VERIFICACIÓN MANUAL DEL HOSTNAME ---
+
+    puts "[Handler: #{object_id}] Initializing WebSocket driver..."
+    driver_options = { max_length: 10 * 1024 * 1024 }
+    begin
+      self.define_singleton_method(:url) { @settings[:url_string] }
+      @driver = ::WebSocket::Driver.client(self, driver_options)
+    rescue => e
+       puts "[Handler: #{object_id}] !!! ERROR CREATING DRIVER: #{e.class} - #{e.message}"
+       close_connection_after_writing
+       return
+    end
+
+    # Callbacks
+    @driver.on(:open) { |e| handle_ws_open(e) }
+    @driver.on(:message) { |e| handle_ws_message(e) }
+    @driver.on(:close) { |e| handle_ws_close(e) }
+    @driver.on(:error) { |e| handle_ws_error(e) }
+
+    puts "[Handler: #{object_id}] Starting WebSocket handshake (driver will call write)..."
+    @driver.start
+  rescue => e
+    puts "[Handler: #{object_id}] ERROR during WebSocket driver setup/start (after init): #{e.class} - #{e.message}"
+    puts e.backtrace.take(5).join("\n")
+    close_connection_after_writing
+  end
+
+  # --- write, notify_writable, pause, resume, receive_data --- (SIN CAMBIOS)
+  def write(data)
+      # ... (igual que la última versión) ...
+       puts "[Handler: #{object_id}] Driver wants to write #{data.bytesize} bytes."
+       @write_buffer << data
+       resume unless @resuming
+       notify_writable
+  end
+
+  def notify_writable
+       # ... (igual que la última versión) ...
+        return if @write_buffer.empty?
+        begin
+          bytes_sent = send_data(@write_buffer)
+          puts "[Handler: #{object_id}] send_data attempted to send #{@write_buffer.bytesize} bytes, queued #{bytes_sent} bytes."
+          if bytes_sent > 0
+            @write_buffer.slice!(0, bytes_sent)
+          end
+          pause if @write_buffer.empty?
+        rescue => e
+          puts "[Handler: #{object_id}] ERROR in notify_writable (send_data): #{e.class} - #{e.message}"
+          close_connection_after_writing
+        end
+  end
+
+  def pause
+      @resuming = false
+  end
+
+  def resume
+      @resuming = true
+  end
+
+  def receive_data(data)
+     # ... (igual que la última versión) ...
+      unless @driver
+        puts "[Handler: #{object_id}] WARN: Received data before WebSocket driver was ready. Ignoring."
+        return
+      end
+      begin
+        @driver.parse(data)
+      rescue => e
+        puts "[Handler: #{object_id}] ERROR parsing received data: #{e.class} - #{e.message}"
+        close_connection_after_writing
+      end
+  end
+
+  # --- Callbacks extraídos (sin cambios) ---
+  def handle_ws_open(event)
+      @connected_ws = true
+      puts "[WebSocket Driver: #{object_id}] OPENED! WebSocket connection established."
+      message = "Hello mTLS world (via websocket-driver)!" # Mensaje actualizado
+      puts "[WebSocket Driver: #{object_id}] Sending: #{message}"
+      @driver.text(message)
+  end
+  def handle_ws_message(event)
+      puts "[WebSocket Driver: #{object_id}] Received message: #{event.data}"
+      puts "[WebSocket Driver: #{object_id}] Closing connection now."
+      @driver.close("Client received echo", 1000)
+  end
+  def handle_ws_close(event)
+      puts "[WebSocket Driver: #{object_id}] CLOSED: code=#{event.code}, reason=#{event.reason}"
+      @connected_ws = false
+      close_connection_after_writing
+  end
+  def handle_ws_error(event)
+      puts "[WebSocket Driver: #{object_id}] ERROR: #{event.message}"
+      @connected_ws = false
+      close_connection_after_writing
+  end
+
+  # --- unbind, port, settings (sin cambios) ---
+  def unbind
+      puts "[Handler: #{object_id}] Connection unbound (closed)."
+      EM.stop_event_loop if EM.reactor_running?
+  end
+  def port
+      @settings[:port]
+  end
+  def settings
+      @settings
+  end
+end
+
+
+# --- 3. Iniciar el Bucle de Eventos EventMachine ---
+puts "[Main] Starting EventMachine reactor..."
+EM.run do
+  puts "[EM] Reactor running. Connecting to #{hostname}:#{port}..."
+  EM.connect(hostname, port, WebSocketClientHandler, client_settings)
+rescue => e
+  puts "[EM] ERROR starting connection: #{e.class} - #{e.message}"
+  EM.stop_event_loop if EM.reactor_running?
+end
+
+puts "[Main] EventMachine stopped. Script finished."

@@ -1,0 +1,51 @@
+# faye_client.rb
+require 'faye/websocket'
+require 'eventmachine'
+# require 'openssl'
+
+# --- Configuración ---
+server_url = "wss://localhost:8080/"
+client_cert_path = 'scripts/agente_py-cert.pem'
+client_key_path = 'scripts/agente_py-key.pem'
+# ca_file_path = 'scripts/ca-cert.pem' # No usaremos CA para verificar servidor por ahora
+
+# --- OPCIONES TLS: SOLO IDENTIDAD DEL CLIENTE ---
+# Pasamos la clave y cert del cliente, pero NO la CA ni verify_peer.
+# Esto debería permitir que el servidor verifique al cliente,
+# pero el cliente fallará al verificar al servidor (esperado).
+# El objetivo es ver si el HttpParserError desaparece.
+tls_options = {
+  private_key_file: client_key_path,
+  cert_chain_file: client_cert_path
+}
+# ------------------------------------------------
+
+puts "[Client] Attempting to connect to #{server_url} (Client Cert Only)"
+
+EM.run do
+  ws = Faye::WebSocket::Client.new(server_url, nil, tls: tls_options)
+
+  ws.on :open do |event|
+    # Probablemente no llegaremos aquí porque la verificación del servidor fallará
+    puts "[Client] Connected to server! (UNEXPECTED)"
+    ws.close(1000, "Unexpected success")
+  end
+
+  ws.on :message do |event|
+    puts "[Client] Received echo: #{event.data} (UNEXPECTED)"
+  end
+
+  ws.on :error do |event|
+    # Esperamos el error "Unable to verify the server certificate" aquí
+    puts "[Client] Error (Expected?): #{event.message}"
+    EM.stop_event_loop if EM.reactor_running?
+  end
+
+  ws.on :close do |event|
+    puts "[Client] Connection closed: code=#{event.code}, reason=#{event.reason}"
+    ws = nil
+    EM.stop_event_loop if EM.reactor_running?
+  end
+end
+
+puts "[Client] EventMachine stopped."

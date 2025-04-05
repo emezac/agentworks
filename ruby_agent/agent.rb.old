@@ -1,0 +1,50 @@
+# --- CLIENTE (Versión para probar SIN SSL) ---
+require 'async'
+require 'async/websocket'
+require 'async/io'
+require 'async/http/endpoint'
+# require 'openssl' # No necesario para ws://
+require 'uri'
+
+# --- ELIMINAR O COMENTAR TODA LA CONFIGURACIÓN DE SSL CONTEXT ---
+# ssl_context = OpenSSL::SSL::SSLContext.new
+# ssl_context.cert = ...
+# ssl_context.key = ...
+# ssl_context.ca_file = ...
+# ssl_context.verify_mode = ...
+# ---------------------------------------------------------------
+
+# --- Crear el Endpoint HTTP explícitamente SIN SSL ---
+# *** CAMBIAR wss:// a ws:// ***
+server_uri = URI.parse("ws://localhost:8080/") # <--- Usar ws://
+# *** NO PASAR ssl_context ***
+http_endpoint = Async::HTTP::Endpoint.new(server_uri)
+# ---------------------------------------------------
+puts "Client attempting to connect to: #{http_endpoint.url}"
+
+# WebSocket Client
+Async do
+  begin
+    # La llamada a connect es la misma, pero el endpoint ahora es ws://
+    Async::WebSocket::Client.connect(http_endpoint) do |connection|
+      puts "Connected to server"
+      connection.send("Hello, server!")
+      message = connection.read
+      puts "Received echo: #{message}"
+      connection.close
+      puts "Connection closed."
+    end
+    puts "WebSocket communication finished successfully."
+  rescue Async::WebSocket::ConnectionError => e
+    puts "--> [Client] Failed to establish WebSocket connection: #{e.message}" # Mensaje más específico
+  rescue EOFError
+    puts "--> [Client] Server closed connection unexpectedly (EOF)."
+  rescue Errno::ECONNREFUSED
+    puts "--> [Client] Connection refused. Is the server running?"
+  rescue => e
+    puts "--> [Client] Error: #{e.class}: #{e.message}"
+    puts e.backtrace.take(10).join("\n")
+  end
+end
+
+puts "Client script finished."

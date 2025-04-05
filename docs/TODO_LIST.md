@@ -53,7 +53,7 @@
 
 * [x] (S, P) Create basic FastAPI project structure.
 * [x] (S, P) Add a WSS endpoint route (`/ws/{agent_id}`) using `websockets` library integration.
-* [ ] (R) Create basic Ruby agent script structure using `async-websocket` server and client patterns.
+* [x] (R) Create basic Ruby agent script structure using `async-websocket` server and client patterns.
 * [x] (B) Implement basic WSS connection handling (log on_connect, on_disconnect).
 
 ### 4. Day 1 Testing & Deliverables

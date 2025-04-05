@@ -1,45 +1,77 @@
 require 'async'
 require 'async/websocket'
+# El require explícito que sí funcionó antes
+require 'async/websocket/adapters/http'
 require 'async/io'
-require 'openssl'
-require_relative 'ssl_endpoint_extension'
+require 'async/http/endpoint'
+require 'async/http/server'
+# require 'protocol/http/request' # No lo necesitamos directamente aquí
+# require 'protocol/http/response' # No lo necesitamos directamente aquí
+# require 'protocol/websocket/error' # Solo si se necesita
+require 'uri'
+# require 'openssl' # Mantenlo comentado para ws://
 
-def start_server
-  Async do |task|
-    begin
-      tcp_endpoint = Async::IO::Endpoint.tcp('0.0.0.0', 8080)
-      
-      ssl_context = OpenSSL::SSL::SSLContext.new
-      ssl_context.cert = OpenSSL::X509::Certificate.new(File.read('scripts/agente_py-cert.pem'))
-      ssl_context.key = OpenSSL::PKey::RSA.new(File.read('scripts/agente_py-key.pem'))
-      ssl_context.ca_file = 'scripts/ca-cert.pem'
-      ssl_context.verify_mode = OpenSSL::SSL::VERIFY_PEER | OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
-      
-      ssl_endpoint = Async::IO::SSLEndpoint.new(tcp_endpoint, ssl_context: ssl_context)
-      
-      puts "Server starting on wss://#{ssl_endpoint.authority}"
-      
-      server = ssl_endpoint.accept do |socket|
-        Async::WebSocket::Server.open(socket) do |connection|
-          puts "Client connected"
-          connection.each do |message|
-            puts "Received message: #{message}"
-            connection.send(message)
-          end
-          puts "Client disconnected"
-        end
-      end
-      
-      Signal.trap("INT") do
-        puts "Shutting down server..."
-        server.close
-        task.stop
-      end
-      
-      task.sleep
-    rescue Async::Stop
-      puts "Servidor detenido de manera ordenada."
+# --- NO HAY MONKEY PATCH ---
+
+# --- CONFIGURACIÓN SIN SSL ---
+server_uri = URI.parse("ws://0.0.0.0:8080")
+endpoint = Async::HTTP::Endpoint.new(server_uri)
+puts "Defined server endpoint: #{endpoint.url}"
+# --- FIN CONFIGURACIÓN SIN SSL ---
+
+# Define la lógica WebSocket en un bloque separado
+websocket_handler_block = lambda do |connection|
+  # ... (lógica del bloque SIN CAMBIOS) ...
+  remote_addr_str = begin; connection.io.remote_address.ip_address; rescue; "unknown"; end
+  puts "--> [WS Handler] Connection established for #{remote_addr_str}"
+  begin
+    while message = connection.read
+      puts "Received from #{remote_addr_str}: #{message}"
+      connection.write(message)
+      connection.flush
     end
+    puts "--> [WS Handler] Client #{remote_addr_str} finished/disconnected."
+  rescue EOFError # ... y otros rescues ...
+    puts "--> [WS Handler] Client #{remote_addr_str} closed connection (EOF)."
+  rescue Errno::ECONNRESET
+    puts "--> [WS Handler] Connection reset by peer #{remote_addr_str}."
+  rescue ::Protocol::WebSocket::ClosedError => e
+     puts "--> [WS Handler] WebSocket closed gracefully by peer #{remote_addr_str}: #{e.message}"
+  rescue => e
+    puts "--> [WS Handler] Error for #{remote_addr_str}: #{e.class}: #{e.message}"
+    puts e.backtrace.take(5).join("\n")
+  ensure
+    connection.close unless connection.closed?
+    puts "--> [WS Handler] Cleaned up connection for #{remote_addr_str}."
   end
 end
 
+# *** USAR Async::WebSocket::Server COMO MIDDLEWARE ***
+# Crear la instancia de Async::WebSocket::Server pasándole el bloque handler.
+# Quitamos el lambda 'app' anterior.
+websocket_middleware = Async::WebSocket::Server.new(websocket_handler_block)
+puts "Created WebSocket middleware."
+
+# Crear el Servidor HTTP, pasando el middleware WebSocket como la aplicación.
+http_server = Async::HTTP::Server.new(websocket_middleware, endpoint)
+puts "Created HTTP server instance with WebSocket middleware."
+# ***************************************************
+
+# Ejecutar el servidor
+Async do |task|
+  # ... (resto del bloque Async sin cambios) ...
+  puts "Starting HTTP server run loop..."
+  begin
+    http_server.run
+    puts "Server run loop finished."
+  rescue Interrupt
+    puts "\nServer stopping..."
+  rescue => e
+    puts "--> [Server Runner] CRITICAL ERROR running server: #{e.class}: #{e.message}"
+    puts e.backtrace.join("\n")
+  ensure
+    puts "Server shutting down."
+  end
+end
+
+puts "Server script main thread finished (Async block running in background)."
